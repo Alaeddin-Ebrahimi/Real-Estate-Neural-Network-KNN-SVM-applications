@@ -1,0 +1,339 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#CONV2D-ANN:4 & 5 Layers"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import tensorflow as tf\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "Using TensorFlow backend.\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Load the libraries\n",
+    "from keras.models import Sequential #ANN architecture\n",
+    "from keras.layers import Dense      #The layers in ANN\n",
+    "from keras.models import model_from_json\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from keras.utils import to_categorical\n",
+    "import mnist"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#load Data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(60000, 28, 28)\n",
+      "(60000,)\n",
+      "(10000, 28, 28)\n",
+      "(10000,)\n"
+     ]
+    }
+   ],
+   "source": [
+    "from keras.datasets import mnist\n",
+    "#(x_train, y_train), (x_test, y_test) = mnist.load_data()\n",
+    "\n",
+    "(Input, Label),(test_Data, test_Label)= mnist.load_data()\n",
+    "\n",
+    "print(Input.shape)\n",
+    "print(Label.shape)\n",
+    "print(test_Data.shape)\n",
+    "print(test_Label.shape)\n",
+    "\n",
+    "#train_images=(x_train, y_train)\n",
+    "#test_images=(x_test, y_test) \n",
+    "#print(x_train).shape)\n",
+    "#print(test_images.shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(60000, 28, 28, 1)\n",
+      "(10000, 28, 28, 1)\n"
+     ]
+    }
+   ],
+   "source": [
+    "#Reshape:\n",
+    "Input=Input.reshape(60000, 28, 28, 1)\n",
+    "test_Data=test_Data.reshape(10000, 28, 28, 1)\n",
+    "\n",
+    "print(Input.shape)\n",
+    "print(test_Data.shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[0. 0. 0. 0. 0. 1. 0. 0. 0. 0.]\n",
+      "[0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]\n"
+     ]
+    }
+   ],
+   "source": [
+    "# packages\n",
+    "from keras.models import Sequential\n",
+    "from keras.layers import Dense\n",
+    "from keras.layers import Flatten\n",
+    "from keras.optimizers import SGD\n",
+    "from keras.layers.convolutional import Conv2D\n",
+    "from keras.layers.convolutional import MaxPooling2D\n",
+    "\n",
+    "# Encode the outputs\n",
+    "Labels = to_categorical(Label) #Converts a class vector (integers) to binary class matrix.\n",
+    "Test_Label = to_categorical(test_Label)\n",
+    "\n",
+    "print(Labels[0])\n",
+    "print(Test_Label[0])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Model: \"sequential_1\"\n",
+      "_________________________________________________________________\n",
+      "Layer (type)                 Output Shape              Param #   \n",
+      "=================================================================\n",
+      "conv2d_1 (Conv2D)            (None, 26, 26, 64)        640       \n",
+      "_________________________________________________________________\n",
+      "conv2d_2 (Conv2D)            (None, 24, 24, 32)        18464     \n",
+      "_________________________________________________________________\n",
+      "max_pooling2d_1 (MaxPooling2 (None, 12, 12, 32)        0         \n",
+      "_________________________________________________________________\n",
+      "flatten_1 (Flatten)          (None, 4608)              0         \n",
+      "_________________________________________________________________\n",
+      "dense_1 (Dense)              (None, 10)                46090     \n",
+      "=================================================================\n",
+      "Total params: 65,194\n",
+      "Trainable params: 65,194\n",
+      "Non-trainable params: 0\n",
+      "_________________________________________________________________\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Build the model\n",
+    "model= Sequential()\n",
+    "model.add(Conv2D(64, kernel_size=3,activation='relu', input_shape=(28, 28,1)))\n",
+    "model.add(Conv2D(32, kernel_size=3, activation='relu'))\n",
+    "model.add(MaxPooling2D())\n",
+    "model.add(Flatten())\n",
+    "model.add(Dense(10, activation='softmax'))\n",
+    "model.summary()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Compile\n",
+    "#Status(1): metrics=['accuracy']\n",
+    "model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])\n",
+    "\n",
+    "#Status(2): metrics=MeanSquaredError()\n",
+    "#model.compile(optimizer='adam',loss='categorical_crossentropy',metrics=[tf.keras.metrics.MeanSquaredError()])\n",
+    "\n",
+    "#Status(3): MeanAbsoluteError\n",
+    "#model.compile(\n",
+    "    #optimizer='sgd',\n",
+    "    #loss='categorical_crossentropy',\n",
+    "    #metrics=[tf.keras.metrics.MeanAbsoluteError()])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Train on 60000 samples, validate on 10000 samples\n",
+      "Epoch 1/2\n",
+      "60000/60000 [==============================] - 119s 2ms/step - loss: 0.2355 - accuracy: 0.9510 - val_loss: 0.0746 - val_accuracy: 0.9748\n",
+      "Epoch 2/2\n",
+      "60000/60000 [==============================] - 118s 2ms/step - loss: 0.0771 - accuracy: 0.9766 - val_loss: 0.0726 - val_accuracy: 0.9777\n"
+     ]
+    }
+   ],
+   "source": [
+    "#Fit the model\n",
+    "history=model.fit(Input, Labels, validation_data=(test_Data,Test_Label), epochs=2)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [],
+   "source": [
+    "epochs = 10\n",
+    "lrs= 0.05\n",
+    "decay = lrs/epochs\n",
+    "\n",
+    "#Optimizer method: Stochastic Gradient Descent\n",
+    "\n",
+    "sgd=tf.keras.optimizers.SGD(\n",
+    "    learning_rate=lrs, momentum=0.4, nesterov=False,decay=decay, name='SGD'\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "10000/10000 [==============================] - 3s 324us/step\n",
+      "Accuracy: 97.77%\n"
+     ]
+    }
+   ],
+   "source": [
+    "#Evaluate the model\n",
+    "score=model.evaluate(\n",
+    "test_Data,\n",
+    "to_categorical(test_Label)\n",
+    ")\n",
+    "print(\"Accuracy: %.2f%%\" % (score[1]*100))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[7 2 1 0 4 1 4 9 5 9]\n",
+      "[7 2 1 0 4 1 4 9 5 9]\n"
+     ]
+    }
+   ],
+   "source": [
+    "#predict \n",
+    "predict1=model.predict(test_Data[:10])\n",
+    "#print model's prediction\n",
+    "\n",
+    "print(np.argmax(predict1, axis=1))\n",
+    "print(test_Label[:10])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#for i in range(0,4):\n",
+    "#first_image=test_images[i]\n",
+    "#first_image=np.array(first_image, dtype='float')\n",
+    "# pixels=first_image.reshape((28,28))\n",
+    "#plt.imshow(pixels)\n",
+    "#plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.7"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
